@@ -1,10 +1,11 @@
-/* Estilos básicos: colores, espacios y modelo de caja como en clase. */
+/* Colores y espacio interior de la cabecera. */
 .encabezado {
   background-color: #005cbb;
   color: white;
   padding: 16px;
 }
 
+/* Margen interior para separar el contenido del borde de la ventana. */
 main {
   padding: 20px;
 }

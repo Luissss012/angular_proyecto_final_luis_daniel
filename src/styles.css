@@ -1,4 +1,4 @@
-/* Estilos globales escritos con CSS básico. */
+/* El ancho de cada elemento incluye su padding y borde. */
 * {
   box-sizing: border-box;
 }

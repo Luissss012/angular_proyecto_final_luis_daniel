@@ -1,0 +1,58 @@
+[
+  {
+    "id": "SIS-WEB",
+    "codigo": "SIS101",
+    "nombre": "Programación web",
+    "creditos": 4,
+    "carreraId": "SIS"
+  },
+  {
+    "id": "SIS-BD",
+    "codigo": "SIS102",
+    "nombre": "Bases de datos I",
+    "creditos": 4,
+    "carreraId": "SIS"
+  },
+  {
+    "id": "SIS-RED",
+    "codigo": "SIS103",
+    "nombre": "Redes I",
+    "creditos": 4,
+    "carreraId": "SIS"
+  },
+  {
+    "id": "SIS-SO",
+    "codigo": "SIS104",
+    "nombre": "Sistemas operativos",
+    "creditos": 4,
+    "carreraId": "SIS"
+  },
+  {
+    "id": "ADM-ADM",
+    "codigo": "ADM101",
+    "nombre": "Administración I",
+    "creditos": 3,
+    "carreraId": "ADM"
+  },
+  {
+    "id": "ADM-ECO",
+    "codigo": "ADM102",
+    "nombre": "Introducción a la Economía",
+    "creditos": 2,
+    "carreraId": "ADM"
+  },
+  {
+    "id": "ADM-INV",
+    "codigo": "ADM103",
+    "nombre": "Técnicas de Investigación",
+    "creditos": 2,
+    "carreraId": "ADM"
+  },
+  {
+    "id": "ADM-SOC",
+    "codigo": "ADM104",
+    "nombre": "Sociología General",
+    "creditos": 2,
+    "carreraId": "ADM"
+  }
+]

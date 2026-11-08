@@ -1,12 +1,12 @@
 # UMES Inscripciones
 
-Proyecto final de Programación Web de Luis (`Luissss012`) y Daniel (`LeinaD002`).
+Proyecto final de Programación Web de Luis (`Luissss012`) y Daniel (`danielaragonumes`).
 
 Aplicación para gestionar estudiantes e inscripciones universitarias con Angular 20 y Angular Material.
 
 ## Estado actual
 
-La versión actual contiene la configuración inicial y la pantalla de presentación. La gestión de estudiantes, inscripciones y respaldos está pendiente de implementación.
+La versión actual contiene la pantalla de presentación, los modelos TypeScript y los catálogos JSON iniciales. Los formularios y la gestión de registros están pendientes de implementación.
 
 ## Requisitos
 
@@ -41,9 +41,14 @@ Los archivos compilados se generan en dist/.
 - src/app/app.config.ts: configuración general.
 - src/app/app.routes.ts: configuración de rutas, actualmente sin páginas adicionales.
 - src/styles.css: estilos globales. El tema CSS precompilado de Material se carga desde angular.json.
-- public/: recursos estáticos.
+- src/app/models/: interfaces de estudiantes, teléfonos, cursos, inscripciones y opciones.
+- public/assets/catalogos/: catálogos JSON de lectura inicial.
 - docs/: documentación del proyecto.
 
 ## Datos y respaldos
 
 La persistencia en localStorage y la importación/exportación JSON se incorporarán en las siguientes versiones. Esta versión inicial todavía no almacena registros.
+
+## Catálogos académicos
+
+Se incluyen dos carreras de la Universidad Mesoamericana y cuatro cursos de ejemplo por carrera. Las fuentes, sedes y valores de ejemplo están descritos en [Catálogos](docs/CATALOGOS.md).
