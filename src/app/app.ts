@@ -1,12 +1,12 @@
 import { Component } from '@angular/core';
-import { MatCardModule } from '@angular/material/card';
+import { RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 
-/** Componente raíz que presenta la cabecera y el contenido inicial. */
+/** Cabecera y menú comunes a las tres pantallas de la aplicación. */
 @Component({
   selector: 'app-root',
-  // Componentes Material utilizados por la plantilla.
-  imports: [MatCardModule, MatToolbarModule],
+  imports: [RouterLink, RouterLinkActive, RouterOutlet, MatButtonModule, MatToolbarModule],
   templateUrl: './app.html',
   styleUrl: './app.css',
 })

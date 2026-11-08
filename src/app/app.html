@@ -1,21 +1,21 @@
-<!-- Cabecera de la aplicación. -->
 <header>
   <mat-toolbar class="encabezado">
     <span>UMES · Inscripciones</span>
   </mat-toolbar>
+
+  <!-- routerLink navega sin recargar toda la página; activo destaca la sección actual. -->
+  <nav aria-label="Secciones principales">
+    <a mat-button routerLink="/estudiantes" routerLinkActive="activo" ariaCurrentWhenActive="page">Estudiantes</a>
+    <a mat-button routerLink="/inscripciones" routerLinkActive="activo" ariaCurrentWhenActive="page">Inscripciones</a>
+    <a mat-button routerLink="/respaldo" routerLinkActive="activo" ariaCurrentWhenActive="page">Respaldo</a>
+  </nav>
 </header>
 
-<!-- Contenido principal de la pantalla de presentación. -->
 <main>
-  <mat-card appearance="outlined">
-    <mat-card-header>
-      <mat-card-title><h1>Sistema de inscripciones universitarias</h1></mat-card-title>
-      <mat-card-subtitle>Proyecto final de Programación Web</mat-card-subtitle>
-    </mat-card-header>
-    <mat-card-content>
-      <p>Una aplicación para organizar estudiantes e inscripciones académicas.</p>
-      <p>Registro de estudiantes y selección de cursos por período académico.</p>
-      <p class="integrantes">Luis y Daniel · Universidad Mesoamericana</p>
-    </mat-card-content>
-  </mat-card>
+  <!-- Cambia la pantalla seleccionada y conserva la cabecera y el menú. -->
+  <router-outlet></router-outlet>
 </main>
+
+<footer>
+  <p>Luis y Daniel · Universidad Mesoamericana</p>
+</footer>

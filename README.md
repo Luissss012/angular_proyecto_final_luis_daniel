@@ -6,7 +6,7 @@ Aplicación para gestionar estudiantes e inscripciones universitarias con Angula
 
 ## Estado actual
 
-La versión actual contiene la pantalla de presentación, los modelos TypeScript y los catálogos JSON iniciales. Los formularios y la gestión de registros están pendientes de implementación.
+La versión actual contiene navegación entre las pantallas iniciales de estudiantes, inscripciones y respaldo, los modelos TypeScript y los catálogos JSON. Los formularios y la gestión de registros están pendientes de implementación.
 
 ## Requisitos
 
@@ -36,10 +36,11 @@ Los archivos compilados se generan en dist/.
 
 - src/main.ts: inicio de la aplicación.
 - src/app/app.ts: componente principal.
-- src/app/app.html: pantalla de presentación.
+- src/app/app.html: cabecera, menú y espacio para la pantalla seleccionada.
 - src/app/app.css: estilos del componente principal.
 - src/app/app.config.ts: configuración general.
-- src/app/app.routes.ts: configuración de rutas, actualmente sin páginas adicionales.
+- src/app/app.routes.ts: rutas de estudiantes, inscripciones y respaldo.
+- src/app/pages/: componentes de las tres pantallas.
 - src/styles.css: estilos globales. El tema CSS precompilado de Material se carga desde angular.json.
 - src/app/models/: interfaces de estudiantes, teléfonos, cursos, inscripciones y opciones.
 - public/assets/catalogos/: catálogos JSON de lectura inicial.
@@ -52,3 +53,11 @@ La persistencia en localStorage y la importación/exportación JSON se incorpora
 ## Catálogos académicos
 
 Se incluyen dos carreras de la Universidad Mesoamericana y cuatro cursos de ejemplo por carrera. Las fuentes, sedes y valores de ejemplo están descritos en [Catálogos](docs/CATALOGOS.md).
+
+## Navegación
+
+- /estudiantes: pantalla inicial de estudiantes.
+- /inscripciones: pantalla inicial de inscripciones.
+- /respaldo: pantalla inicial de respaldos.
+
+La raíz y las rutas desconocidas redirigen a /estudiantes. Los enlaces utilizan RouterLink para cambiar de sección sin recargar toda la página. Las pantallas muestran su propósito y estado de desarrollo; todavía no incluyen acciones de gestión.
