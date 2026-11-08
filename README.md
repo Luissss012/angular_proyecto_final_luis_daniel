@@ -6,7 +6,7 @@ Aplicación para gestionar estudiantes e inscripciones universitarias con Angula
 
 ## Estado actual
 
-La versión actual contiene navegación entre las pantallas iniciales de estudiantes, inscripciones y respaldo, los modelos TypeScript y los catálogos JSON. Los formularios y la gestión de registros están pendientes de implementación.
+La versión actual contiene navegación entre las pantallas iniciales de estudiantes, inscripciones y respaldo, los modelos TypeScript, los catálogos JSON y servicios para lectura y persistencia local. Los formularios y la gestión de registros están pendientes de implementación.
 
 ## Requisitos
 
@@ -42,13 +42,14 @@ Los archivos compilados se generan en dist/.
 - src/app/app.routes.ts: rutas de estudiantes, inscripciones y respaldo.
 - src/app/pages/: componentes de las tres pantallas.
 - src/styles.css: estilos globales. El tema CSS precompilado de Material se carga desde angular.json.
+- src/app/services/: lectura de catálogos y persistencia local.
 - src/app/models/: interfaces de estudiantes, teléfonos, cursos, inscripciones y opciones.
 - public/assets/catalogos/: catálogos JSON de lectura inicial.
 - docs/: documentación del proyecto.
 
 ## Datos y respaldos
 
-La persistencia en localStorage y la importación/exportación JSON se incorporarán en las siguientes versiones. Esta versión inicial todavía no almacena registros.
+AlmacenamientoService permite consultar y guardar estudiantes e inscripciones bajo la clave umes-inscripciones de localStorage, en un objeto con version: 1. CatalogosService lee los ocho catálogos con HttpClient. Todavía no hay formularios conectados a estos servicios ni importación/exportación de respaldos.
 
 ## Catálogos académicos
 
