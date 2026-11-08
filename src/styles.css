@@ -1,0 +1,12 @@
+/* Estilos globales escritos con CSS básico. */
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: #fafafa;
+  color: #222222;
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+}
