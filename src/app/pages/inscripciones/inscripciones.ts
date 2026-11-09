@@ -1,11 +1,159 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { RouterLink } from '@angular/router';
+import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
+import { MatCheckboxModule } from '@angular/material/checkbox';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatSelectModule } from '@angular/material/select';
+import { Curso } from '../../models/curso';
+import { Estudiante } from '../../models/estudiante';
+import { OpcionCatalogo } from '../../models/opcion-catalogo';
+import { AlmacenamientoService } from '../../services/almacenamiento.service';
+import { CatalogosService } from '../../services/catalogos.service';
 
-/** Pantalla de inscripciones seleccionada mediante las rutas. */
+/** Selección de estudiante, período y cursos mediante un formulario reactivo. */
 @Component({
   selector: 'app-inscripciones',
-  imports: [MatCardModule],
+  imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatCardModule,
+    MatCheckboxModule, MatFormFieldModule, MatSelectModule],
   templateUrl: './inscripciones.html',
   styleUrl: './inscripciones.css',
 })
-export class Inscripciones {}
+export class Inscripciones implements OnInit {
+  estudiantes: Estudiante[] = [];
+  cursos: Curso[] = [];
+  carreras: OpcionCatalogo[] = [];
+  periodos: OpcionCatalogo[] = [];
+  jornadas: OpcionCatalogo[] = [];
+  modalidades: OpcionCatalogo[] = [];
+  estados: OpcionCatalogo[] = [];
+  errorEstudiantes = '';
+  erroresCatalogos: string[] = [];
+  errorSeleccion = '';
+  mensaje = '';
+
+  formulario = new FormGroup({
+    estudianteId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    periodoId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    // Una inscripción conserva ids de cursos, no copias de los objetos completos.
+    cursoIds: new FormControl<string[]>([], { nonNullable: true, validators: [Validators.required] }),
+    jornada: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    modalidad: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    estado: new FormControl('Registrada', { nonNullable: true, validators: [Validators.required] }),
+  });
+
+  constructor(private catalogos: CatalogosService, private almacenamiento: AlmacenamientoService) {}
+
+  ngOnInit(): void {
+    this.cargarEstudiantes();
+    this.cargarCatalogos();
+  }
+
+  cargarEstudiantes(): void {
+    this.errorEstudiantes = '';
+    try {
+      this.estudiantes = this.almacenamiento.obtenerEstudiantes();
+    } catch (error) {
+      this.errorEstudiantes = error instanceof Error ? error.message : 'No se pudieron cargar los estudiantes.';
+    }
+  }
+
+  cargarCatalogos(): void {
+    this.erroresCatalogos = [];
+    this.catalogos.obtenerCursos().subscribe({
+      next: datos => this.cursos = datos,
+      error: () => this.erroresCatalogos.push('No se pudieron cargar los cursos.'),
+    });
+    this.catalogos.obtenerCarreras().subscribe({
+      next: datos => this.carreras = datos,
+      error: () => this.erroresCatalogos.push('No se pudieron cargar las carreras.'),
+    });
+    this.catalogos.obtenerPeriodos().subscribe({
+      next: datos => this.periodos = datos,
+      error: () => this.erroresCatalogos.push('No se pudieron cargar los períodos.'),
+    });
+    this.catalogos.obtenerJornadas().subscribe({
+      next: datos => this.jornadas = datos,
+      error: () => this.erroresCatalogos.push('No se pudieron cargar las jornadas.'),
+    });
+    this.catalogos.obtenerModalidades().subscribe({
+      next: datos => this.modalidades = datos,
+      error: () => this.erroresCatalogos.push('No se pudieron cargar las modalidades.'),
+    });
+    this.catalogos.obtenerEstados().subscribe({
+      next: datos => this.estados = datos,
+      error: () => this.erroresCatalogos.push('No se pudieron cargar los estados.'),
+    });
+  }
+
+  get estudianteSeleccionado(): Estudiante | undefined {
+    return this.estudiantes.find(estudiante => estudiante.id === this.formulario.controls.estudianteId.value);
+  }
+
+  get cursosDisponibles(): Curso[] {
+    const estudiante = this.estudianteSeleccionado;
+    return estudiante ? this.cursos.filter(curso => curso.carreraId === estudiante.carreraId) : [];
+  }
+
+  get carreraSeleccionada(): string {
+    return this.carreras.find(carrera => carrera.id === this.estudianteSeleccionado?.carreraId)?.nombre ?? '';
+  }
+
+  get totalCreditos(): number {
+    return this.cursosDisponibles
+      .filter(curso => this.formulario.controls.cursoIds.value.includes(curso.id))
+      .reduce((total, curso) => total + curso.creditos, 0);
+  }
+
+  get catalogosListos(): boolean {
+    return this.erroresCatalogos.length === 0 && this.cursos.length > 0 && this.carreras.length > 0 &&
+      this.periodos.length > 0 && this.jornadas.length > 0 && this.modalidades.length > 0 && this.estados.length > 0;
+  }
+
+  cambiarEstudiante(): void {
+    // No conservar cursos del estudiante anterior, aunque pertenezca a otra carrera.
+    this.formulario.controls.cursoIds.reset();
+    this.mensaje = '';
+    this.errorSeleccion = '';
+  }
+
+  seleccionarCurso(id: string, marcado: boolean): void {
+    const control = this.formulario.controls.cursoIds;
+    if (marcado && this.cursosDisponibles.some(curso => curso.id === id)) {
+      if (!control.value.includes(id)) control.setValue([...control.value, id]);
+    } else {
+      control.setValue(control.value.filter(cursoId => cursoId !== id));
+    }
+    control.markAsTouched();
+    this.mensaje = '';
+    this.errorSeleccion = '';
+  }
+
+  validarSeleccion(): void {
+    this.mensaje = '';
+    this.errorSeleccion = '';
+    this.formulario.markAllAsTouched();
+    if (this.formulario.invalid || !this.catalogosListos || this.errorEstudiantes) return;
+    const valores = this.formulario.getRawValue();
+    // Comprobar también los valores recibidos por el código, no solo por los controles.
+    if (!this.estudianteSeleccionado ||
+        !this.periodos.some(periodo => periodo.id === valores.periodoId) ||
+        !this.jornadas.some(jornada => jornada.id === valores.jornada) ||
+        !this.modalidades.some(modalidad => modalidad.id === valores.modalidad) ||
+        !this.estados.some(estado => estado.id === valores.estado) ||
+        valores.cursoIds.some(id => !this.cursosDisponibles.some(curso => curso.id === id)) ||
+        new Set(valores.cursoIds).size !== valores.cursoIds.length) {
+      this.errorSeleccion = 'Revisa las opciones y selecciona cursos válidos de la carrera del estudiante, sin repetirlos.';
+      return;
+    }
+    this.mensaje = 'Selección válida: ' + valores.cursoIds.length + ' curso(s), ' + this.totalCreditos +
+      ' créditos. La inscripción todavía no se ha guardado.';
+  }
+
+  limpiarFormulario(): void {
+    this.formulario.reset();
+    this.mensaje = '';
+    this.errorSeleccion = '';
+  }
+}

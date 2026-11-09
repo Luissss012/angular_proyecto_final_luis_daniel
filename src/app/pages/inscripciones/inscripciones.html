@@ -3,7 +3,85 @@
     <mat-card-title><h1>Inscripciones</h1></mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <p>Selección de estudiante, período académico y cursos para una inscripción.</p>
-    <p class="aviso">Esta sección está en desarrollo.</p>
+    <p>Selecciona un estudiante, un período académico y uno o más cursos.</p>
+    @if (errorEstudiantes) {
+      <p class="error" role="alert">{{ errorEstudiantes }}</p>
+      <button mat-button type="button" (click)="cargarEstudiantes()">Reintentar estudiantes</button>
+    } @else if (estudiantes.length === 0) {
+      <p>Primero registra un estudiante para poder inscribirlo.</p>
+      <a mat-button routerLink="/estudiantes">Ir a estudiantes</a>
+    }
+    @if (erroresCatalogos.length > 0) {
+      <div class="error" role="alert">
+        @for (error of erroresCatalogos; track $index) { <p>{{ error }}</p> }
+        <button mat-button type="button" (click)="cargarCatalogos()">Reintentar catálogos</button>
+      </div>
+    }
+    @if (errorSeleccion) { <p class="error" role="alert">{{ errorSeleccion }}</p> }
+
+    <form [formGroup]="formulario" (ngSubmit)="validarSeleccion()" (change)="mensaje = ''" novalidate>
+      <div class="campos">
+        <mat-form-field appearance="outline">
+          <mat-label>Estudiante</mat-label>
+          <mat-select formControlName="estudianteId" (selectionChange)="cambiarEstudiante()">
+            @for (estudiante of estudiantes; track estudiante.id) {
+              <mat-option [value]="estudiante.id">{{ estudiante.codigo }} · {{ estudiante.nombres }} {{ estudiante.apellidos }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Selecciona un estudiante.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Período académico</mat-label>
+          <mat-select formControlName="periodoId" (selectionChange)="mensaje = ''">
+            @for (periodo of periodos; track periodo.id) { <mat-option [value]="periodo.id">{{ periodo.nombre }}</mat-option> }
+          </mat-select>
+          <mat-error>Selecciona un período.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Jornada</mat-label>
+          <mat-select formControlName="jornada" (selectionChange)="mensaje = ''">
+            @for (jornada of jornadas; track jornada.id) { <mat-option [value]="jornada.id">{{ jornada.nombre }}</mat-option> }
+          </mat-select>
+          <mat-error>Selecciona una jornada.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Modalidad</mat-label>
+          <mat-select formControlName="modalidad" (selectionChange)="mensaje = ''">
+            @for (modalidad of modalidades; track modalidad.id) { <mat-option [value]="modalidad.id">{{ modalidad.nombre }}</mat-option> }
+          </mat-select>
+          <mat-error>Selecciona una modalidad.</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Estado</mat-label>
+          <mat-select formControlName="estado" (selectionChange)="mensaje = ''">
+            @for (estado of estados; track estado.id) { <mat-option [value]="estado.id">{{ estado.nombre }}</mat-option> }
+          </mat-select>
+          <mat-error>Selecciona un estado.</mat-error>
+        </mat-form-field>
+      </div>
+      <fieldset>
+        <legend>Cursos</legend>
+        @if (estudianteSeleccionado) { <p>Carrera: {{ carreraSeleccionada }}</p> }
+        <div class="cursos">
+          @for (curso of cursosDisponibles; track curso.id) {
+            <mat-checkbox [checked]="formulario.controls.cursoIds.value.includes(curso.id)"
+              (change)="seleccionarCurso(curso.id, $event.checked)">
+              {{ curso.codigo }} · {{ curso.nombre }} ({{ curso.creditos }} créditos)
+            </mat-checkbox>
+          } @empty {
+            <p>{{ estudianteSeleccionado ? 'No hay cursos disponibles para esta carrera.' : 'Selecciona un estudiante para ver sus cursos.' }}</p>
+          }
+        </div>
+        @if (formulario.controls.cursoIds.touched && formulario.controls.cursoIds.invalid) {
+          <p class="error">Selecciona al menos un curso.</p>
+        }
+        <p>Créditos seleccionados: {{ totalCreditos }}</p>
+      </fieldset>
+      <div class="acciones">
+        <button mat-flat-button type="submit" [disabled]="formulario.invalid || !catalogosListos || !!errorEstudiantes">Validar selección</button>
+        <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
+      </div>
+    </form>
+    @if (mensaje) { <p class="resultado" role="status">{{ mensaje }}</p> }
   </mat-card-content>
 </mat-card>
