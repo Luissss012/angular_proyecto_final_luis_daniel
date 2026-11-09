@@ -75,3 +75,30 @@ legend {
 .telefono mat-form-field {
   margin-bottom: 24px;
 }
+
+.listado {
+  margin-top: 24px;
+}
+
+h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.contenedor-tabla {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+}
+
+caption {
+  padding: 12px;
+  text-align: left;
+  font-weight: bold;
+}
+
+th, td {
+  padding: 12px;
+}

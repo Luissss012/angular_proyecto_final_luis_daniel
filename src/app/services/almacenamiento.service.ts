@@ -23,6 +23,14 @@ export class AlmacenamientoService {
     return this.leerDatos().inscripciones;
   }
 
+  agregarEstudiante(estudiante: Estudiante): void {
+    // Leer el estado actual evita reemplazar registros con una lista desactualizada.
+    const datos = this.leerDatos();
+    datos.estudiantes.push(estudiante);
+    // validarDatos comprueba códigos e identificadores únicos antes de escribir.
+    this.guardarDatos(datos);
+  }
+
   guardarEstudiantes(estudiantes: Estudiante[]): void {
     const datos = this.leerDatos();
     datos.estudiantes = estudiantes;

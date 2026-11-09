@@ -16,7 +16,7 @@
     }
 
     <!-- Los controles HTML se conectan al FormGroup mediante formControlName. -->
-    <form [formGroup]="formulario" (ngSubmit)="validarFormulario()"
+    <form [formGroup]="formulario" (ngSubmit)="guardarEstudiante()"
       (input)="mensaje = ''" (change)="mensaje = ''" novalidate>
       <div class="campos">
         <mat-form-field appearance="outline">
@@ -106,12 +106,69 @@
       <div class="acciones">
         <button mat-flat-button type="submit"
           [disabled]="formulario.invalid || carreras.length === 0 || generos.length === 0 ||
-            (telefonos.length > 0 && tiposContacto.length === 0)">Validar datos</button>
+            (telefonos.length > 0 && tiposContacto.length === 0)">Guardar estudiante</button>
         <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
       </div>
     </form>
     @if (mensaje) {
       <p class="resultado" role="status">{{ mensaje }}</p>
+    }
+  </mat-card-content>
+</mat-card>
+
+<mat-card appearance="outlined" class="listado">
+  <mat-card-header>
+    <mat-card-title><h2>Estudiantes registrados</h2></mat-card-title>
+  </mat-card-header>
+  <mat-card-content>
+    @if (errorListado) {
+      <div class="error-carga" role="alert">
+        <p>{{ errorListado }}</p>
+        <button mat-button type="button" (click)="cargarEstudiantes()">Reintentar listado</button>
+      </div>
+    } @else {
+      <div class="acciones">
+        <mat-form-field appearance="outline">
+          <mat-label>Buscar por código, nombre o apellido</mat-label>
+          <input matInput [formControl]="busqueda" type="search">
+        </mat-form-field>
+        <button mat-button type="button" (click)="busqueda.setValue('')">Limpiar búsqueda</button>
+      </div>
+      <p role="status">{{ estudiantesFiltrados.length }} de {{ estudiantes.length }} estudiantes</p>
+      @if (estudiantes.length === 0) {
+        <p>No hay estudiantes registrados.</p>
+      } @else if (estudiantesFiltrados.length === 0) {
+        <p>No se encontraron estudiantes con esa búsqueda.</p>
+      } @else {
+        <!-- La tabla puede desplazarse dentro de su contenedor en pantallas pequeñas. -->
+        <div class="contenedor-tabla" tabindex="0" role="region" aria-label="Listado de estudiantes">
+          <table mat-table [dataSource]="estudiantesFiltrados">
+            <caption>Datos de los estudiantes registrados</caption>
+            <ng-container matColumnDef="codigo">
+              <th mat-header-cell *matHeaderCellDef>Código</th>
+              <td mat-cell *matCellDef="let estudiante">{{ estudiante.codigo }}</td>
+            </ng-container>
+            <ng-container matColumnDef="nombres">
+              <th mat-header-cell *matHeaderCellDef>Nombres</th>
+              <td mat-cell *matCellDef="let estudiante">{{ estudiante.nombres }}</td>
+            </ng-container>
+            <ng-container matColumnDef="apellidos">
+              <th mat-header-cell *matHeaderCellDef>Apellidos</th>
+              <td mat-cell *matCellDef="let estudiante">{{ estudiante.apellidos }}</td>
+            </ng-container>
+            <ng-container matColumnDef="carrera">
+              <th mat-header-cell *matHeaderCellDef>Carrera</th>
+              <td mat-cell *matCellDef="let estudiante">{{ nombreCarrera(estudiante.carreraId) }}</td>
+            </ng-container>
+            <ng-container matColumnDef="correo">
+              <th mat-header-cell *matHeaderCellDef>Correo</th>
+              <td mat-cell *matCellDef="let estudiante">{{ estudiante.correo }}</td>
+            </ng-container>
+            <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+            <tr mat-row *matRowDef="let fila; columns: columnas;"></tr>
+          </table>
+        </div>
+      }
     }
   </mat-card-content>
 </mat-card>

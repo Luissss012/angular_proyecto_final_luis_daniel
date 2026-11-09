@@ -6,20 +6,26 @@ import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
+import { Estudiante } from '../../models/estudiante';
 import { OpcionCatalogo } from '../../models/opcion-catalogo';
 import { CatalogosService } from '../../services/catalogos.service';
 import { AlmacenamientoService } from '../../services/almacenamiento.service';
 import { fechaNacimientoValida, noSoloEspacios, numeroTelefonoValido } from '../../validators/estudiante.validators';
 
-/** Formulario de datos personales. El guardado se conecta en una entrega posterior. */
+/** Registro y búsqueda de estudiantes con persistencia mediante un servicio. */
 @Component({
   selector: 'app-estudiantes',
   imports: [ReactiveFormsModule, MatButtonModule, MatCardModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule],
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule, MatTableModule],
   templateUrl: './estudiantes.html',
   styleUrl: './estudiantes.css',
 })
 export class Estudiantes implements OnInit {
+  estudiantes: Estudiante[] = [];
+  busqueda = new FormControl('', { nonNullable: true });
+  columnas = ['codigo', 'nombres', 'apellidos', 'carrera', 'correo'];
+  errorListado = '';
   carreras: OpcionCatalogo[] = [];
   generos: OpcionCatalogo[] = [];
   tiposContacto: OpcionCatalogo[] = [];
@@ -70,6 +76,7 @@ export class Estudiantes implements OnInit {
       }
     });
     this.cargarCatalogos();
+    this.cargarEstudiantes();
   }
 
   // Devuelve el arreglo para recorrerlo en HTML y modificar sus filas.
@@ -114,7 +121,29 @@ export class Estudiantes implements OnInit {
     });
   }
 
-  validarFormulario(): void {
+  cargarEstudiantes(): void {
+    this.errorListado = '';
+    try {
+      this.estudiantes = this.almacenamiento.obtenerEstudiantes();
+    } catch (error) {
+      this.errorListado = error instanceof Error ? error.message : 'No se pudo cargar el listado.';
+    }
+  }
+
+  // La búsqueda no modifica los registros: devuelve solo las coincidencias.
+  get estudiantesFiltrados(): Estudiante[] {
+    const texto = this.busqueda.value.trim().toLowerCase();
+    return this.estudiantes.filter(estudiante =>
+      estudiante.codigo.toLowerCase().includes(texto) ||
+      (estudiante.nombres + ' ' + estudiante.apellidos).toLowerCase().includes(texto));
+  }
+
+  nombreCarrera(carreraId: string): string {
+    const carrera = this.carreras.find(opcion => opcion.id === carreraId);
+    return carrera ? carrera.nombre : carreraId;
+  }
+
+  guardarEstudiante(): void {
     this.mensaje = '';
     // Reconsulta el código por si el almacenamiento cambió desde la última revisión.
     this.formulario.controls.codigo.updateValueAndValidity();
@@ -123,7 +152,39 @@ export class Estudiantes implements OnInit {
         (this.telefonos.length > 0 && this.tiposContacto.length === 0)) {
       return;
     }
-    this.mensaje = 'Los datos del estudiante son válidos. Esta prueba no guarda el estudiante.';
+    const valores = this.formulario.getRawValue();
+    // Comprobar que las selecciones aún pertenecen a los catálogos cargados.
+    if (!this.carreras.some(carrera => carrera.id === valores.carreraId) ||
+        !this.generos.some(genero => genero.id === valores.genero) ||
+        valores.telefonos.some(telefono => !this.tiposContacto.some(tipo => tipo.id === telefono.tipo))) {
+      this.errorAlmacenamiento = 'Selecciona opciones válidas en carrera, género y tipos de contacto.';
+      return;
+    }
+    try {
+      const estudiante: Estudiante = {
+        // El id interno permanece independiente del código estudiantil visible.
+        id: crypto.randomUUID(),
+        codigo: valores.codigo.trim().toUpperCase(),
+        nombres: valores.nombres.trim(),
+        apellidos: valores.apellidos.trim(),
+        fechaNacimiento: valores.fechaNacimiento,
+        genero: valores.genero,
+        correo: valores.correo.trim(),
+        direccion: valores.direccion.trim(),
+        municipio: valores.municipio.trim(),
+        carreraId: valores.carreraId,
+        telefonos: valores.telefonos.map(telefono => ({
+          numero: telefono.numero.trim(), tipo: telefono.tipo, activo: telefono.activo,
+        })),
+      };
+      this.almacenamiento.agregarEstudiante(estudiante);
+      // Solo limpiar y mostrar éxito después de que el servicio termine de guardar.
+      this.limpiarFormulario();
+      this.cargarEstudiantes();
+      this.mensaje = 'Estudiante registrado correctamente.';
+    } catch (error) {
+      this.errorAlmacenamiento = error instanceof Error ? error.message : 'No se pudo guardar el estudiante.';
+    }
   }
 
   limpiarFormulario(): void {
