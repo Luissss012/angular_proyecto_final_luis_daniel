@@ -1,8 +1,11 @@
-<mat-card appearance="outlined">
+<mat-card appearance="outlined" id="formulario-inscripcion">
   <mat-card-header>
     <mat-card-title><h1>Inscripciones</h1></mat-card-title>
   </mat-card-header>
   <mat-card-content>
+    @if (inscripcionEnEdicionId) {
+      <p role="status"><strong>Editando inscripción.</strong> Los cambios conservan su identificador.</p>
+    }
     <p>Selecciona un estudiante, un período académico y uno o más cursos.</p>
     @if (errorEstudiantes) {
       <p class="error" role="alert">{{ errorEstudiantes }}</p>
@@ -78,8 +81,8 @@
         <p>Créditos seleccionados: {{ totalCreditos }}</p>
       </fieldset>
       <div class="acciones">
-        <button mat-flat-button type="submit" [disabled]="formulario.invalid || !catalogosListos || !!errorEstudiantes">Guardar inscripción</button>
-        <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
+        <button mat-flat-button type="submit" [disabled]="formulario.invalid || !catalogosListos || !!errorEstudiantes">{{ inscripcionEnEdicionId ? 'Guardar cambios' : 'Guardar inscripción' }}</button>
+        <button mat-button type="button" (click)="limpiarFormulario()">{{ inscripcionEnEdicionId ? 'Cancelar edición' : 'Limpiar' }}</button>
       </div>
     </form>
     @if (mensaje) { <p class="resultado" role="status">{{ mensaje }}</p> }
@@ -149,7 +152,13 @@
             <ng-container matColumnDef="acciones">
               <th mat-header-cell *matHeaderCellDef>Acciones</th>
               <td mat-cell *matCellDef="let inscripcion">
-                <button mat-button type="button" (click)="verDetalle(inscripcion)">Ver detalle</button>
+                <div class="acciones">
+                  <button mat-button type="button" (click)="verDetalle(inscripcion)">Ver detalle</button>
+                  <a mat-button href="#formulario-inscripcion" (click)="editarInscripcion(inscripcion)"
+                    [disabled]="!catalogosListos">Editar</a>
+                  <button mat-button type="button" (click)="solicitarCancelacion(inscripcion)"
+                    [disabled]="!catalogosListos || inscripcion.estado === 'Cancelada'">Cancelar inscripción</button>
+                </div>
               </td>
             </ng-container>
             <tr mat-header-row *matHeaderRowDef="columnas"></tr>
@@ -178,6 +187,22 @@
         <dt>Total de créditos</dt><dd>{{ creditosInscripcion(inscripcion) }}</dd>
       </dl>
       <button mat-button type="button" (click)="detalleInscripcion = null">Cerrar detalle</button>
+    </mat-card-content>
+  </mat-card>
+}
+
+@if (errorOperacion) { <p class="error" role="alert">{{ errorOperacion }}</p> }
+@if (mensajeOperacion) { <p class="resultado" role="status">{{ mensajeOperacion }}</p> }
+@if (pendienteCancelar; as inscripcion) {
+  <mat-card appearance="outlined" class="listado" role="region" aria-label="Confirmar cancelación">
+    <mat-card-content>
+      <h2>Cancelar inscripción</h2>
+      <p>¿Cancelar la inscripción de <strong>{{ nombreEstudiante(inscripcion.estudianteId) }}</strong>
+        para el período {{ inscripcion.periodoId }}? El registro y sus cursos se conservarán.</p>
+      <div class="acciones">
+        <button mat-flat-button type="button" (click)="confirmarCancelacion()" [disabled]="!catalogosListos">Sí, cancelar inscripción</button>
+        <button mat-button type="button" (click)="cerrarCancelacion()">Volver sin cambios</button>
+      </div>
     </mat-card-content>
   </mat-card>
 }

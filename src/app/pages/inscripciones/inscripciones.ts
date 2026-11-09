@@ -7,6 +7,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
+import { CatalogosInscripcion } from '../../models/catalogos-inscripcion';
 import { Curso } from '../../models/curso';
 import { Inscripcion } from '../../models/inscripcion';
 import { InscripcionesService } from '../../services/inscripciones.service';
@@ -26,6 +27,10 @@ import { CatalogosService } from '../../services/catalogos.service';
 export class Inscripciones implements OnInit {
   registrosInscripciones: Inscripcion[] = [];
   detalleInscripcion: Inscripcion | null = null;
+  inscripcionEnEdicionId: string | null = null;
+  pendienteCancelar: Inscripcion | null = null;
+  errorOperacion = '';
+  mensajeOperacion = '';
   errorListado = '';
   columnas = ['estudiante', 'periodo', 'cursos', 'estado', 'acciones'];
   filtros = new FormGroup({
@@ -146,6 +151,59 @@ export class Inscripciones implements OnInit {
     }
   }
 
+  editarInscripcion(inscripcion: Inscripcion): void {
+    this.errorOperacion = '';
+    this.mensajeOperacion = '';
+    try {
+      const actual = this.almacenamiento.obtenerInscripciones().find(registro => registro.id === inscripcion.id);
+      if (!actual) throw new Error('La inscripción ya no existe. Actualiza el listado.');
+      this.cargarEstudiantes();
+      this.limpiarFormulario();
+      this.inscripcionEnEdicionId = actual.id;
+      this.formulario.patchValue(actual);
+      this.formulario.markAsPristine();
+      this.formulario.markAsUntouched();
+      this.detalleInscripcion = null;
+      this.pendienteCancelar = null;
+    } catch (error) {
+      this.errorOperacion = error instanceof Error ? error.message : 'No se pudo cargar la edición.';
+    }
+  }
+
+  solicitarCancelacion(inscripcion: Inscripcion): void {
+    this.errorOperacion = '';
+    this.mensajeOperacion = '';
+    this.detalleInscripcion = null;
+    this.pendienteCancelar = inscripcion;
+  }
+
+  cerrarCancelacion(): void {
+    this.pendienteCancelar = null;
+    this.errorOperacion = '';
+  }
+
+  confirmarCancelacion(): void {
+    if (!this.pendienteCancelar) return;
+    try {
+      const id = this.pendienteCancelar.id;
+      this.inscripciones.cancelar(id, this.catalogosDeInscripcion());
+      if (this.inscripcionEnEdicionId === id) this.limpiarFormulario();
+      this.pendienteCancelar = null;
+      this.detalleInscripcion = null;
+      this.errorOperacion = '';
+      this.cargarInscripciones();
+      this.mensajeOperacion = 'Inscripción cancelada. El registro se conserva.';
+    } catch (error) {
+      this.errorOperacion = error instanceof Error ? error.message : 'No se pudo cancelar la inscripción.';
+    }
+  }
+
+  // La misma colección de catálogos se utiliza al crear, editar y cancelar.
+  private catalogosDeInscripcion(): CatalogosInscripcion {
+    return { cursos: this.cursos, periodos: this.periodos, jornadas: this.jornadas,
+      modalidades: this.modalidades, estados: this.estados };
+  }
+
   get estudianteSeleccionado(): Estudiante | undefined {
     return this.estudiantes.find(estudiante => estudiante.id === this.formulario.controls.estudianteId.value);
   }
@@ -214,7 +272,7 @@ export class Inscripciones implements OnInit {
     const valores = this.formulario.getRawValue();
     try {
       const inscripcion: Inscripcion = {
-        id: crypto.randomUUID(),
+        id: this.inscripcionEnEdicionId ?? crypto.randomUUID(),
         estudianteId: valores.estudianteId,
         periodoId: valores.periodoId,
         cursoIds: valores.cursoIds,
@@ -222,21 +280,25 @@ export class Inscripciones implements OnInit {
         modalidad: valores.modalidad,
         estado: valores.estado,
       };
-      this.inscripciones.registrar(inscripcion, {
-        cursos: this.cursos, periodos: this.periodos, jornadas: this.jornadas,
-        modalidades: this.modalidades, estados: this.estados,
-      });
+      const editando = this.inscripcionEnEdicionId !== null;
+      if (editando) {
+        this.inscripciones.actualizar(inscripcion, this.catalogosDeInscripcion());
+      } else {
+        this.inscripciones.registrar(inscripcion, this.catalogosDeInscripcion());
+      }
+      this.pendienteCancelar = null;
       // Conservar el formulario si hay un error; limpiarlo solo después del guardado.
       this.limpiarFormulario();
       this.detalleInscripcion = null;
       this.cargarInscripciones();
-      this.mensaje = 'Inscripción registrada correctamente.';
+      this.mensaje = editando ? 'Inscripción actualizada correctamente.' : 'Inscripción registrada correctamente.';
     } catch (error) {
       this.errorSeleccion = error instanceof Error ? error.message : 'No se pudo guardar la inscripción.';
     }
   }
 
   limpiarFormulario(): void {
+    this.inscripcionEnEdicionId = null;
     this.formulario.reset();
     this.mensaje = '';
     this.errorSeleccion = '';
