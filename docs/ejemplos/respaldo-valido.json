@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "estudiantes": [
+    {
+      "id": "EST-DEMO",
+      "codigo": "EST-DEMO",
+      "nombres": "Ana",
+      "apellidos": "Prueba",
+      "fechaNacimiento": "2002-05-15",
+      "genero": "Femenino",
+      "correo": "ana.prueba@example.com",
+      "direccion": "Calle de ejemplo, zona 1",
+      "municipio": "Quetzaltenango",
+      "carreraId": "SIS",
+      "telefonos": [
+        {
+          "numero": "5555-1234",
+          "tipo": "Móvil",
+          "activo": true
+        }
+      ]
+    }
+  ],
+  "inscripciones": [
+    {
+      "id": "INS-DEMO",
+      "estudianteId": "EST-DEMO",
+      "periodoId": "2026-2",
+      "cursoIds": [
+        "SIS-WEB"
+      ],
+      "jornada": "Nocturna",
+      "modalidad": "Presencial",
+      "estado": "Registrada"
+    }
+  ]
+}

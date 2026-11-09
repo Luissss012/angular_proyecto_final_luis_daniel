@@ -14,6 +14,6 @@ Un modelo describe la estructura de datos mediante una interfaz TypeScript. No d
 
 Un componente representa una parte de la interfaz: su .ts define la clase, su .html contiene la plantilla y su .css define los estilos. Los componentes implementados son App, Estudiantes, Inscripciones y Respaldo.
 
-Telefono describe numero, tipo y activo. Estudiante contiene telefonos como un arreglo de objetos Telefono. Los controles para editar ese arreglo pertenecerán al formulario de estudiantes.
+Telefono describe numero, tipo y activo. Estudiante contiene telefonos como un arreglo de objetos Telefono. Los controles para editar ese arreglo pertenecen al formulario de estudiantes mediante FormArray.
 
-Las interfaces se comprueban al compilar y no validan por sí mismas datos externos. La validación de archivos importados se realizará en tiempo de ejecución antes de persistir cambios.
+Las interfaces se comprueban al compilar y no validan por sí mismas datos externos. La validación de archivos importados se realiza en tiempo de ejecución mediante validarRespaldo antes de persistir cambios.

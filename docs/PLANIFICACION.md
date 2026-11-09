@@ -74,18 +74,22 @@ Cada fila define lo que debe estar en el repositorio después del commit y lo qu
 
 ## Checklist de entrega
 
-- [ ] Angular 20 y Angular Material; formularios reactivos.
-- [ ] CRUD de estudiantes con filtros, teléfonos como objetos y validaciones.
-- [ ] Catálogos JSON relacionados y cursos completos.
-- [ ] Inscripciones con consulta, edición, cancelación y filtros.
-- [ ] Servicios para lógica y localStorage; persistencia comprobada.
-- [ ] Exportación y posterior importación del respaldo.
-- [ ] Importación inválida y cancelación conservan los datos anteriores.
-- [ ] Relaciones, duplicados y valores de catálogo validados al guardar e importar.
+- [x] Angular 20 y Angular Material; formularios reactivos.
+- [x] CRUD de estudiantes con filtros, teléfonos como objetos y validaciones.
+- [x] Catálogos JSON relacionados y cursos completos.
+- [x] Inscripciones con consulta, edición, cancelación y filtros.
+- [x] Servicios para lógica y localStorage; persistencia comprobada.
+- [x] Exportación y posterior importación del respaldo.
+- [x] Importación inválida y cancelación conservan los datos anteriores.
+- [x] Relaciones, duplicados y valores de catálogo validados al guardar e importar.
 - [ ] Interfaz revisada en escritorio, tableta y teléfono.
-- [ ] Build correcto e instalación verificada desde un clon limpio.
-- [ ] Al menos 15 commits progresivos; objetivo de 16 con participación real de ambos.
-- [ ] Repositorio con nombre exigido, accesible al docente y sin secretos.
-- [ ] README y registro de pruebas completos.
+- [x] Build correcto e instalación verificada desde un clon limpio.
+- [x] Al menos 15 commits progresivos; objetivo de 16 con participación real de ambos.
+- [x] Repositorio con nombre exigido, accesible al docente y sin secretos.
+- [x] README y registro de pruebas completos.
 - [ ] Ambos pueden explicar toda la aplicación y realizar cambios pequeños.
 - [ ] Enviar únicamente el enlace del repositorio antes de las 23:59.
+
+## Cierre de implementación
+
+Las 16 entregas de implementación y documentación se completaron. Existe además un commit de corrección inicial del README. Las pruebas automatizadas se ejecutan con npm run verificar; las comprobaciones visuales y la demostración de descarga real pendientes se detallan en VERIFICACIONES.md. La planificación no constituye evidencia de que esas comprobaciones manuales ya se hayan realizado.

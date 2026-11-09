@@ -2,14 +2,20 @@
 
 ## CatalogosService
 
-Lee los ocho JSON de assets/catalogos con HttpClient. Cada método devuelve un Observable: el componente debe suscribirse para recibir los datos o el error de la petición. provideHttpClient en app.config.ts habilita este cliente. El tipo de la respuesta no sustituye una validación de datos externos.
+Lee los ocho JSON de assets/catalogos con HttpClient. Cada método devuelve un Observable y la pantalla se suscribe al resultado o error. provideHttpClient en app.config.ts habilita las peticiones. Los archivos estáticos no se modifican desde la aplicación.
 
 ## AlmacenamientoService
 
-Utiliza una única clave, umes-inscripciones, con version: 1, estudiantes e inscripciones. obtenerEstudiantes y obtenerInscripciones leen el estado guardado. guardarEstudiantes conserva las inscripciones y guardarInscripciones conserva los estudiantes. Cada lectura convierte nuevamente el JSON, por lo que modificar el arreglo devuelto no modifica el almacenamiento hasta guardar.
+Concentra el acceso a localStorage bajo una clave única, umes-inscripciones. obtenerDatos devuelve version, estudiantes e inscripciones en una sola lectura. Las operaciones de alta, edición y eliminación leen el estado vigente, comprueban la estructura y persisten el conjunto sin borrar previamente el estado anterior. Las consultas devuelven objetos obtenidos de JSON, no referencias compartidas al almacenamiento.
 
-Si la clave no existe, devuelve colecciones vacías sin escribirlas. JSON dañado, versión incompatible, campos de tipos incorrectos, identificadores duplicados o referencias a estudiantes inexistentes producen errores. Los datos dañados no se reemplazan automáticamente. Las fallas de acceso o escritura también producen errores que los futuros componentes deberán mostrar al usuario.
+Comprueba identificadores y códigos únicos, tipos básicos y relaciones con estudiantes. Bloquea la eliminación de estudiantes con inscripciones. reemplazarDatos permite escribir un respaldo completo ya validado, incluso cuando el estado anterior está dañado. Las fallas de lectura y escritura producen errores comprensibles.
 
-La comprobación estructural no es la validación completa de formularios o respaldos: quedan pendientes formatos de correo, fechas, teléfonos, longitudes, valores de catálogo, cursos válidos, compatibilidad de carrera y reglas de inscripción. Estas reglas se incorporarán en sus entregas correspondientes antes de habilitar las operaciones en pantalla. El servicio todavía no expone una operación de importación.
+## InscripcionesService
 
-Las pantallas actuales no están conectadas a los servicios. No hay backend ni sincronización entre navegadores.
+Aplica al crear y editar las reglas de estudiante existente, período/jornada/modalidad/estado del catálogo, cursos existentes compatibles con la carrera, cursos no repetidos y unicidad por estudiante/período. Editar excluye al propio registro al buscar duplicados. Cancelar cambia el estado a Cancelada mediante la misma validación y conserva el identificador y los cursos.
+
+## RespaldoService y validadores
+
+crearContenido serializa una lectura coherente. exportar genera un Blob JSON y una descarga local; no transmite datos a un servidor. validarContenido analiza JSON y llama a validarRespaldo, que revisa todo el conjunto sin escribir. importar repite la validación antes de reemplazar el estado con una sola escritura.
+
+La pantalla mantiene el archivo validado pendiente y pide confirmación explícita. Cancelar descarta esa selección sin modificar registros. Las referencias se verifican contra los estudiantes incluidos en el respaldo nuevo, no contra los anteriores.
