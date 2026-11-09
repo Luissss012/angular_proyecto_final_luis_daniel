@@ -19,7 +19,7 @@
     }
     @if (errorSeleccion) { <p class="error" role="alert">{{ errorSeleccion }}</p> }
 
-    <form [formGroup]="formulario" (ngSubmit)="validarSeleccion()" (change)="mensaje = ''" novalidate>
+    <form [formGroup]="formulario" (ngSubmit)="guardarInscripcion()" (change)="mensaje = ''" novalidate>
       <div class="campos">
         <mat-form-field appearance="outline">
           <mat-label>Estudiante</mat-label>
@@ -78,7 +78,7 @@
         <p>Créditos seleccionados: {{ totalCreditos }}</p>
       </fieldset>
       <div class="acciones">
-        <button mat-flat-button type="submit" [disabled]="formulario.invalid || !catalogosListos || !!errorEstudiantes">Validar selección</button>
+        <button mat-flat-button type="submit" [disabled]="formulario.invalid || !catalogosListos || !!errorEstudiantes">Guardar inscripción</button>
         <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
       </div>
     </form>

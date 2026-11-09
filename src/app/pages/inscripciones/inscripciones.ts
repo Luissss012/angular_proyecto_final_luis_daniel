@@ -7,6 +7,8 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatSelectModule } from '@angular/material/select';
 import { Curso } from '../../models/curso';
+import { Inscripcion } from '../../models/inscripcion';
+import { InscripcionesService } from '../../services/inscripciones.service';
 import { Estudiante } from '../../models/estudiante';
 import { OpcionCatalogo } from '../../models/opcion-catalogo';
 import { AlmacenamientoService } from '../../services/almacenamiento.service';
@@ -43,7 +45,8 @@ export class Inscripciones implements OnInit {
     estado: new FormControl('Registrada', { nonNullable: true, validators: [Validators.required] }),
   });
 
-  constructor(private catalogos: CatalogosService, private almacenamiento: AlmacenamientoService) {}
+  constructor(private catalogos: CatalogosService, private almacenamiento: AlmacenamientoService,
+    private inscripciones: InscripcionesService) {}
 
   ngOnInit(): void {
     this.cargarEstudiantes();
@@ -130,11 +133,11 @@ export class Inscripciones implements OnInit {
     this.errorSeleccion = '';
   }
 
-  validarSeleccion(): void {
+  validarSeleccion(): boolean {
     this.mensaje = '';
     this.errorSeleccion = '';
     this.formulario.markAllAsTouched();
-    if (this.formulario.invalid || !this.catalogosListos || this.errorEstudiantes) return;
+    if (this.formulario.invalid || !this.catalogosListos || this.errorEstudiantes) return false;
     const valores = this.formulario.getRawValue();
     // Comprobar también los valores recibidos por el código, no solo por los controles.
     if (!this.estudianteSeleccionado ||
@@ -145,10 +148,34 @@ export class Inscripciones implements OnInit {
         valores.cursoIds.some(id => !this.cursosDisponibles.some(curso => curso.id === id)) ||
         new Set(valores.cursoIds).size !== valores.cursoIds.length) {
       this.errorSeleccion = 'Revisa las opciones y selecciona cursos válidos de la carrera del estudiante, sin repetirlos.';
-      return;
+      return false;
     }
-    this.mensaje = 'Selección válida: ' + valores.cursoIds.length + ' curso(s), ' + this.totalCreditos +
-      ' créditos. La inscripción todavía no se ha guardado.';
+    return true;
+  }
+
+  guardarInscripcion(): void {
+    if (!this.validarSeleccion()) return;
+    const valores = this.formulario.getRawValue();
+    try {
+      const inscripcion: Inscripcion = {
+        id: crypto.randomUUID(),
+        estudianteId: valores.estudianteId,
+        periodoId: valores.periodoId,
+        cursoIds: valores.cursoIds,
+        jornada: valores.jornada,
+        modalidad: valores.modalidad,
+        estado: valores.estado,
+      };
+      this.inscripciones.registrar(inscripcion, {
+        cursos: this.cursos, periodos: this.periodos, jornadas: this.jornadas,
+        modalidades: this.modalidades, estados: this.estados,
+      });
+      // Conservar el formulario si hay un error; limpiarlo solo después del guardado.
+      this.limpiarFormulario();
+      this.mensaje = 'Inscripción registrada correctamente.';
+    } catch (error) {
+      this.errorSeleccion = error instanceof Error ? error.message : 'No se pudo guardar la inscripción.';
+    }
   }
 
   limpiarFormulario(): void {
