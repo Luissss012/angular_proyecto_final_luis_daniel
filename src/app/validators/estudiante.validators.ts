@@ -30,3 +30,17 @@ export function fechaNacimientoValida(control: AbstractControl): ValidationError
   hoy.setHours(0, 0, 0, 0);
   return fecha > hoy ? { fechaFutura: true } : null;
 }
+
+/** Acepta números locales o internacionales sin convertirlos a cantidades. */
+export function numeroTelefonoValido(control: AbstractControl): ValidationErrors | null {
+  const valor = control.value;
+  if (!valor) {
+    return null; // El campo vacío se controla con required.
+  }
+  if (typeof valor !== 'string' || !/^\+?[0-9][0-9 ()-]*$/.test(valor)) {
+    return { numeroTelefono: true };
+  }
+  // Los separadores no cuentan como dígitos del número de contacto.
+  const digitos = valor.replace(/\D/g, '');
+  return digitos.length >= 8 && digitos.length <= 15 ? null : { numeroTelefono: true };
+}

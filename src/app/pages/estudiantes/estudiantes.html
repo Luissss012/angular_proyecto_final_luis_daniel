@@ -3,11 +3,11 @@
     <mat-card-title><h1>Estudiantes</h1></mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <p>Datos personales del estudiante. Todos los campos son obligatorios.</p>
+    <p>Datos personales del estudiante. Completa los campos y los teléfonos que agregues.</p>
 
-    @if (errorCarreras || errorGeneros) {
+    @if (errorCarreras || errorGeneros || errorTiposContacto) {
       <div class="error-carga" role="alert">
-        <p>{{ errorCarreras }} {{ errorGeneros }}</p>
+        <p>{{ errorCarreras }} {{ errorGeneros }} {{ errorTiposContacto }}</p>
         <button mat-button type="button" (click)="cargarCatalogos()">Reintentar catálogos</button>
       </div>
     }
@@ -73,9 +73,40 @@
           <mat-error>{{ errorCampo('direccion') }}</mat-error>
         </mat-form-field>
       </div>
+      <!-- Cada fila del FormArray contiene número, tipo y estado propios. -->
+      <fieldset formArrayName="telefonos">
+        <legend>Teléfonos de contacto</legend>
+        <p>Usa de 8 a 15 dígitos. Ejemplos: 5555-1234 o +502 5555-1234.</p>
+        @for (telefono of telefonos.controls; track telefono; let i = $index) {
+          <div class="telefono" [formGroupName]="i">
+            <p class="numero-contacto">Contacto {{ i + 1 }}</p>
+            <mat-form-field appearance="outline">
+              <mat-label>Número de teléfono</mat-label>
+              <input matInput type="tel" formControlName="numero" maxlength="30" autocomplete="tel">
+              <mat-error>{{ errorCampo('telefonos.' + i + '.numero') }}</mat-error>
+            </mat-form-field>
+            <mat-form-field appearance="outline">
+              <mat-label>Tipo de contacto</mat-label>
+              <mat-select formControlName="tipo">
+                @for (tipo of tiposContacto; track tipo.id) {
+                  <mat-option [value]="tipo.id">{{ tipo.nombre }}</mat-option>
+                }
+              </mat-select>
+              <mat-error>{{ errorCampo('telefonos.' + i + '.tipo') }}</mat-error>
+            </mat-form-field>
+            <mat-checkbox formControlName="activo">Contacto activo {{ i + 1 }}</mat-checkbox>
+            <button mat-button type="button" (click)="quitarTelefono(i)"
+              [attr.aria-label]="'Quitar contacto ' + (i + 1)">Quitar</button>
+          </div>
+        } @empty {
+          <p>No hay teléfonos agregados.</p>
+        }
+        <button mat-button type="button" (click)="agregarTelefono()">Agregar teléfono</button>
+      </fieldset>
       <div class="acciones">
         <button mat-flat-button type="submit"
-          [disabled]="formulario.invalid || carreras.length === 0 || generos.length === 0">Validar datos</button>
+          [disabled]="formulario.invalid || carreras.length === 0 || generos.length === 0 ||
+            (telefonos.length > 0 && tiposContacto.length === 0)">Validar datos</button>
         <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
       </div>
     </form>

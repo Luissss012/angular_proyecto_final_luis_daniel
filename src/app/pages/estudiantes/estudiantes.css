@@ -9,7 +9,7 @@ mat-card-content {
   line-height: 1.6;
 }
 
-/* Los campos pasan a otra fila cuando no caben, como en los ejemplos de Flexbox. */
+/* Los campos pasan a otra fila cuando no caben en el ancho disponible. */
 .campos {
   display: flex;
   flex-wrap: wrap;
@@ -41,4 +41,37 @@ mat-form-field {
   padding: 12px;
   background-color: #e8f5e9;
   color: #1b5e20;
+}
+
+/* Cada teléfono mantiene sus campos juntos y puede ocupar varias líneas en móvil. */
+fieldset {
+  min-width: 0;
+  margin: 12px 0 24px;
+  padding: 16px;
+  border: 1px solid #cccccc;
+}
+
+legend {
+  padding: 0 8px;
+  font-weight: bold;
+}
+
+.telefono {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 24px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid #dddddd;
+}
+
+.numero-contacto {
+  flex-basis: 100%;
+  margin: 0;
+  font-weight: bold;
+}
+
+.telefono mat-form-field {
+  margin-bottom: 24px;
 }

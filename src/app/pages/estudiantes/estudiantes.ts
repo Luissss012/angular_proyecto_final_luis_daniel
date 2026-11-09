@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
-import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormArray, FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
+import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatCardModule } from '@angular/material/card';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -8,21 +9,23 @@ import { MatSelectModule } from '@angular/material/select';
 import { OpcionCatalogo } from '../../models/opcion-catalogo';
 import { CatalogosService } from '../../services/catalogos.service';
 import { AlmacenamientoService } from '../../services/almacenamiento.service';
-import { fechaNacimientoValida, noSoloEspacios } from '../../validators/estudiante.validators';
+import { fechaNacimientoValida, noSoloEspacios, numeroTelefonoValido } from '../../validators/estudiante.validators';
 
 /** Formulario de datos personales. El guardado se conecta en una entrega posterior. */
 @Component({
   selector: 'app-estudiantes',
   imports: [ReactiveFormsModule, MatButtonModule, MatCardModule,
-    MatFormFieldModule, MatInputModule, MatSelectModule],
+    MatFormFieldModule, MatInputModule, MatSelectModule, MatCheckboxModule],
   templateUrl: './estudiantes.html',
   styleUrl: './estudiantes.css',
 })
 export class Estudiantes implements OnInit {
   carreras: OpcionCatalogo[] = [];
   generos: OpcionCatalogo[] = [];
+  tiposContacto: OpcionCatalogo[] = [];
   errorCarreras = '';
   errorGeneros = '';
+  errorTiposContacto = '';
   errorAlmacenamiento = '';
   mensaje = '';
   hoy = this.obtenerHoy();
@@ -46,6 +49,8 @@ export class Estudiantes implements OnInit {
     municipio: new FormControl('', { nonNullable: true,
       validators: [Validators.required, noSoloEspacios, Validators.minLength(2), Validators.maxLength(60)] }),
     carreraId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+    // FormArray permite agregar o quitar grupos de controles de teléfono.
+    telefonos: new FormArray([this.crearTelefono()]),
   });
 
   constructor(private catalogos: CatalogosService, private almacenamiento: AlmacenamientoService) {}
@@ -67,9 +72,34 @@ export class Estudiantes implements OnInit {
     this.cargarCatalogos();
   }
 
+  // Devuelve el arreglo para recorrerlo en HTML y modificar sus filas.
+  get telefonos() {
+    return this.formulario.controls.telefonos;
+  }
+
+  crearTelefono() {
+    return new FormGroup({
+      numero: new FormControl('', { nonNullable: true,
+        validators: [Validators.required, numeroTelefonoValido] }),
+      tipo: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
+      activo: new FormControl(true, { nonNullable: true }),
+    });
+  }
+
+  agregarTelefono(): void {
+    this.telefonos.push(this.crearTelefono());
+    this.mensaje = '';
+  }
+
+  quitarTelefono(indice: number): void {
+    this.telefonos.removeAt(indice);
+    this.mensaje = '';
+  }
+
   cargarCatalogos(): void {
     this.errorCarreras = '';
     this.errorGeneros = '';
+    this.errorTiposContacto = '';
     this.catalogos.obtenerCarreras().subscribe({
       next: opciones => this.carreras = opciones,
       error: () => this.errorCarreras = 'No se pudo cargar la lista de carreras.',
@@ -78,6 +108,10 @@ export class Estudiantes implements OnInit {
       next: opciones => this.generos = opciones,
       error: () => this.errorGeneros = 'No se pudo cargar la lista de géneros.',
     });
+    this.catalogos.obtenerTiposContacto().subscribe({
+      next: opciones => this.tiposContacto = opciones,
+      error: () => this.errorTiposContacto = 'No se pudo cargar la lista de tipos de contacto.',
+    });
   }
 
   validarFormulario(): void {
@@ -85,13 +119,17 @@ export class Estudiantes implements OnInit {
     // Reconsulta el código por si el almacenamiento cambió desde la última revisión.
     this.formulario.controls.codigo.updateValueAndValidity();
     this.formulario.markAllAsTouched();
-    if (this.formulario.invalid || this.carreras.length === 0 || this.generos.length === 0) {
+    if (this.formulario.invalid || this.carreras.length === 0 || this.generos.length === 0 ||
+        (this.telefonos.length > 0 && this.tiposContacto.length === 0)) {
       return;
     }
-    this.mensaje = 'Los datos personales son válidos. Esta prueba no guarda el estudiante.';
+    this.mensaje = 'Los datos del estudiante son válidos. Esta prueba no guarda el estudiante.';
   }
 
   limpiarFormulario(): void {
+    // reset no elimina filas del FormArray; reconstruimos una sola fila inicial.
+    this.telefonos.clear();
+    this.telefonos.push(this.crearTelefono());
     this.formulario.reset();
     this.errorAlmacenamiento = '';
     this.mensaje = '';
@@ -108,6 +146,7 @@ export class Estudiantes implements OnInit {
     if (campo.hasError('minlength')) return 'Mínimo ' + campo.getError('minlength').requiredLength + ' caracteres.';
     if (campo.hasError('maxlength')) return 'Máximo ' + campo.getError('maxlength').requiredLength + ' caracteres.';
     if (campo.hasError('email')) return 'Escribe un correo válido.';
+    if (campo.hasError('numeroTelefono')) return 'Usa de 8 a 15 dígitos; puedes incluir + al inicio, espacios, guiones y paréntesis.';
     if (campo.hasError('pattern')) return 'Usa solo letras, números y guiones, sin espacios.';
     if (campo.hasError('fechaInvalida')) return 'Selecciona una fecha válida.';
     if (campo.hasError('fechaFutura')) return 'La fecha de nacimiento no puede ser futura.';
