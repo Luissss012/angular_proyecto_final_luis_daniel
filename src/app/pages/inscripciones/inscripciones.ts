@@ -5,6 +5,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatTableModule } from '@angular/material/table';
 import { MatSelectModule } from '@angular/material/select';
 import { Curso } from '../../models/curso';
 import { Inscripcion } from '../../models/inscripcion';
@@ -18,11 +19,20 @@ import { CatalogosService } from '../../services/catalogos.service';
 @Component({
   selector: 'app-inscripciones',
   imports: [ReactiveFormsModule, RouterLink, MatButtonModule, MatCardModule,
-    MatCheckboxModule, MatFormFieldModule, MatSelectModule],
+    MatCheckboxModule, MatFormFieldModule, MatSelectModule, MatTableModule],
   templateUrl: './inscripciones.html',
   styleUrl: './inscripciones.css',
 })
 export class Inscripciones implements OnInit {
+  registrosInscripciones: Inscripcion[] = [];
+  detalleInscripcion: Inscripcion | null = null;
+  errorListado = '';
+  columnas = ['estudiante', 'periodo', 'cursos', 'estado', 'acciones'];
+  filtros = new FormGroup({
+    estudianteId: new FormControl('', { nonNullable: true }),
+    periodoId: new FormControl('', { nonNullable: true }),
+    estado: new FormControl('', { nonNullable: true }),
+  });
   estudiantes: Estudiante[] = [];
   cursos: Curso[] = [];
   carreras: OpcionCatalogo[] = [];
@@ -51,6 +61,7 @@ export class Inscripciones implements OnInit {
   ngOnInit(): void {
     this.cargarEstudiantes();
     this.cargarCatalogos();
+    this.cargarInscripciones();
   }
 
   cargarEstudiantes(): void {
@@ -88,6 +99,51 @@ export class Inscripciones implements OnInit {
       next: datos => this.estados = datos,
       error: () => this.erroresCatalogos.push('No se pudieron cargar los estados.'),
     });
+  }
+
+  cargarInscripciones(): void {
+    this.errorListado = '';
+    try {
+      this.registrosInscripciones = this.almacenamiento.obtenerInscripciones();
+    } catch (error) {
+      this.errorListado = error instanceof Error ? error.message : 'No se pudo cargar el listado de inscripciones.';
+    }
+  }
+
+  get inscripcionesFiltradas(): Inscripcion[] {
+    const filtros = this.filtros.getRawValue();
+    // Los filtros se combinan; una opción vacía significa todas las opciones.
+    return this.registrosInscripciones.filter(inscripcion =>
+      (!filtros.estudianteId || inscripcion.estudianteId === filtros.estudianteId) &&
+      (!filtros.periodoId || inscripcion.periodoId === filtros.periodoId) &&
+      (!filtros.estado || inscripcion.estado === filtros.estado));
+  }
+
+  nombreEstudiante(id: string): string {
+    const estudiante = this.estudiantes.find(registro => registro.id === id);
+    return estudiante ? estudiante.codigo + ' · ' + estudiante.nombres + ' ' + estudiante.apellidos : id;
+  }
+
+  nombresCursos(ids: string[]): string {
+    // Resolver los nombres desde el catálogo sin copiarlos dentro de la inscripción.
+    return ids.map(id => this.cursos.find(curso => curso.id === id)?.nombre ?? id).join(', ');
+  }
+
+  creditosInscripcion(inscripcion: Inscripcion): number {
+    return inscripcion.cursoIds.reduce((total, id) =>
+      total + (this.cursos.find(curso => curso.id === id)?.creditos ?? 0), 0);
+  }
+
+  verDetalle(inscripcion: Inscripcion): void {
+    this.errorListado = '';
+    try {
+      const actual = this.almacenamiento.obtenerInscripciones().find(registro => registro.id === inscripcion.id);
+      if (!actual) throw new Error('La inscripción ya no existe. Actualiza el listado.');
+      this.detalleInscripcion = actual;
+    } catch (error) {
+      this.detalleInscripcion = null;
+      this.errorListado = error instanceof Error ? error.message : 'No se pudo consultar la inscripción.';
+    }
   }
 
   get estudianteSeleccionado(): Estudiante | undefined {
@@ -172,6 +228,8 @@ export class Inscripciones implements OnInit {
       });
       // Conservar el formulario si hay un error; limpiarlo solo después del guardado.
       this.limpiarFormulario();
+      this.detalleInscripcion = null;
+      this.cargarInscripciones();
       this.mensaje = 'Inscripción registrada correctamente.';
     } catch (error) {
       this.errorSeleccion = error instanceof Error ? error.message : 'No se pudo guardar la inscripción.';
