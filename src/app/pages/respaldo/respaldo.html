@@ -3,7 +3,12 @@
     <mat-card-title><h1>Respaldo de datos</h1></mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <p>Exportación e importación de estudiantes e inscripciones en un archivo JSON.</p>
-    <p class="aviso">Esta sección está en desarrollo.</p>
+    <h2>Exportar datos</h2>
+    <p>Descarga un archivo JSON con los estudiantes, sus teléfonos y las inscripciones guardadas en este navegador.</p>
+    <p>El respaldo incluye la versión del formato y conserva los identificadores que relacionan los registros.
+      Los catálogos estáticos no se incluyen. Exportar no elimina ni cambia los datos actuales.</p>
+    <button mat-flat-button type="button" (click)="exportarDatos()">Exportar datos</button>
+    @if (mensaje) { <p class="resultado" role="status">{{ mensaje }}</p> }
+    @if (error) { <p class="error" role="alert">{{ error }}</p> }
   </mat-card-content>
 </mat-card>

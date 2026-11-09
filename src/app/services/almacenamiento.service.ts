@@ -8,6 +8,11 @@ import { Inscripcion } from '../models/inscripcion';
 export class AlmacenamientoService {
   private readonly clave = 'umes-inscripciones';
 
+  // Obtener ambas colecciones en una misma lectura conserva un respaldo coherente.
+  obtenerDatos(): DatosGuardados {
+    return this.leerDatos();
+  }
+
   obtenerEstudiantes(): Estudiante[] {
     return this.leerDatos().estudiantes;
   }

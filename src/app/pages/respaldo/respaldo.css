@@ -1,8 +1,11 @@
-/* Título y contenido de la sección, con estilos CSS básicos. */
 h1 {
   margin: 0;
   font-size: 24px;
   line-height: 1.4;
+}
+
+h2 {
+  font-size: 20px;
 }
 
 mat-card-content {
@@ -10,6 +13,13 @@ mat-card-content {
   line-height: 1.6;
 }
 
-.aviso {
-  color: #444444;
+.resultado {
+  padding: 12px;
+  background-color: #e8f5e9;
+  color: #1b5e20;
+  overflow-wrap: anywhere;
+}
+
+.error {
+  color: #a00000;
 }
