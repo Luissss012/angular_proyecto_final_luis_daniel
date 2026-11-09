@@ -3,7 +3,84 @@
     <mat-card-title><h1>Estudiantes</h1></mat-card-title>
   </mat-card-header>
   <mat-card-content>
-    <p>Registro y consulta de datos personales y teléfonos de estudiantes.</p>
-    <p class="aviso">Esta sección está en desarrollo.</p>
+    <p>Datos personales del estudiante. Todos los campos son obligatorios.</p>
+
+    @if (errorCarreras || errorGeneros) {
+      <div class="error-carga" role="alert">
+        <p>{{ errorCarreras }} {{ errorGeneros }}</p>
+        <button mat-button type="button" (click)="cargarCatalogos()">Reintentar catálogos</button>
+      </div>
+    }
+    @if (errorAlmacenamiento) {
+      <p class="error-carga" role="alert">{{ errorAlmacenamiento }}</p>
+    }
+
+    <!-- Los controles HTML se conectan al FormGroup mediante formControlName. -->
+    <form [formGroup]="formulario" (ngSubmit)="validarFormulario()"
+      (input)="mensaje = ''" (change)="mensaje = ''" novalidate>
+      <div class="campos">
+        <mat-form-field appearance="outline">
+          <mat-label>Código estudiantil</mat-label>
+          <input matInput formControlName="codigo" minlength="3" maxlength="20" placeholder="Ejemplo: EST-001">
+          <mat-error>{{ errorCampo('codigo') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Nombres</mat-label>
+          <input matInput formControlName="nombres" maxlength="60" autocomplete="given-name">
+          <mat-error>{{ errorCampo('nombres') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Apellidos</mat-label>
+          <input matInput formControlName="apellidos" maxlength="60" autocomplete="family-name">
+          <mat-error>{{ errorCampo('apellidos') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Fecha de nacimiento</mat-label>
+          <input matInput type="date" formControlName="fechaNacimiento" [max]="hoy" min="0001-01-01">
+          <mat-error>{{ errorCampo('fechaNacimiento') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Género</mat-label>
+          <mat-select formControlName="genero">
+            @for (genero of generos; track genero.id) {
+              <mat-option [value]="genero.id">{{ genero.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>{{ errorCampo('genero') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Correo electrónico</mat-label>
+          <input matInput type="email" formControlName="correo" maxlength="100" autocomplete="email">
+          <mat-error>{{ errorCampo('correo') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Municipio</mat-label>
+          <input matInput formControlName="municipio" maxlength="60">
+          <mat-error>{{ errorCampo('municipio') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>Carrera</mat-label>
+          <mat-select formControlName="carreraId">
+            @for (carrera of carreras; track carrera.id) {
+              <mat-option [value]="carrera.id">{{ carrera.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>{{ errorCampo('carreraId') }}</mat-error>
+        </mat-form-field>
+        <mat-form-field appearance="outline" class="direccion">
+          <mat-label>Dirección de residencia</mat-label>
+          <textarea matInput formControlName="direccion" rows="2" maxlength="150" autocomplete="street-address"></textarea>
+          <mat-error>{{ errorCampo('direccion') }}</mat-error>
+        </mat-form-field>
+      </div>
+      <div class="acciones">
+        <button mat-flat-button type="submit"
+          [disabled]="formulario.invalid || carreras.length === 0 || generos.length === 0">Validar datos</button>
+        <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
+      </div>
+    </form>
+    @if (mensaje) {
+      <p class="resultado" role="status">{{ mensaje }}</p>
+    }
   </mat-card-content>
 </mat-card>

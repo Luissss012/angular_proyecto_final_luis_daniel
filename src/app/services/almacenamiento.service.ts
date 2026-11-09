@@ -12,6 +12,13 @@ export class AlmacenamientoService {
     return this.leerDatos().estudiantes;
   }
 
+  // La comparación usa el mismo criterio de unicidad que el guardado.
+  existeCodigoEstudiantil(codigo: string): boolean {
+    const codigoBuscado = codigo.trim().toUpperCase();
+    return this.obtenerEstudiantes().some(estudiante =>
+      estudiante.codigo.trim().toUpperCase() === codigoBuscado);
+  }
+
   obtenerInscripciones(): Inscripcion[] {
     return this.leerDatos().inscripciones;
   }
