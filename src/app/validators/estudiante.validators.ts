@@ -1,4 +1,4 @@
-import { AbstractControl, ValidationErrors } from '@angular/forms';
+import { AbstractControl, ValidationErrors, ValidatorFn } from '@angular/forms';
 
 /** required no rechaza espacios; este validador sí comprueba el texto recortado. */
 export function noSoloEspacios(control: AbstractControl): ValidationErrors | null {
@@ -9,13 +9,22 @@ export function noSoloEspacios(control: AbstractControl): ValidationErrors | nul
   return null;
 }
 
+/** Cuenta el texto útil para no aceptar un nombre corto rodeado de espacios. */
+export function minimoTexto(minimo: number): ValidatorFn {
+  return control => {
+    if (typeof control.value !== 'string' || control.value.length === 0) return null;
+    const longitud = control.value.trim().length;
+    return longitud < minimo ? { minlength: { requiredLength: minimo, actualLength: longitud } } : null;
+  };
+}
+
 /** Comprueba una fecha real AAAA-MM-DD y evita nacimientos en el futuro. */
 export function fechaNacimientoValida(control: AbstractControl): ValidationErrors | null {
   const valor = control.value;
   if (!valor) {
     return null; // El campo vacío lo comprueba Validators.required.
   }
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
+  if (typeof valor !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(valor)) {
     return { fechaInvalida: true };
   }
   const partes = valor.split('-').map(Number);
@@ -37,7 +46,7 @@ export function numeroTelefonoValido(control: AbstractControl): ValidationErrors
   if (!valor) {
     return null; // El campo vacío se controla con required.
   }
-  if (typeof valor !== 'string' || !/^\+?[0-9][0-9 ()-]*$/.test(valor)) {
+  if (typeof valor !== 'string' || valor.length > 30 || !/^\+?[0-9][0-9 ()-]*$/.test(valor)) {
     return { numeroTelefono: true };
   }
   // Los separadores no cuentan como dígitos del número de contacto.

@@ -11,7 +11,7 @@ import { Estudiante } from '../../models/estudiante';
 import { OpcionCatalogo } from '../../models/opcion-catalogo';
 import { CatalogosService } from '../../services/catalogos.service';
 import { AlmacenamientoService } from '../../services/almacenamiento.service';
-import { fechaNacimientoValida, noSoloEspacios, numeroTelefonoValido } from '../../validators/estudiante.validators';
+import { fechaNacimientoValida, noSoloEspacios, numeroTelefonoValido, minimoTexto } from '../../validators/estudiante.validators';
 
 /** Registro y búsqueda de estudiantes con persistencia mediante un servicio. */
 @Component({
@@ -47,18 +47,18 @@ export class Estudiantes implements OnInit {
       validators: [Validators.required, Validators.minLength(3), Validators.maxLength(20),
         Validators.pattern(/^[A-Za-z0-9-]+$/)] }),
     nombres: new FormControl('', { nonNullable: true,
-      validators: [Validators.required, noSoloEspacios, Validators.minLength(2), Validators.maxLength(60)] }),
+      validators: [Validators.required, noSoloEspacios, minimoTexto(2), Validators.maxLength(60)] }),
     apellidos: new FormControl('', { nonNullable: true,
-      validators: [Validators.required, noSoloEspacios, Validators.minLength(2), Validators.maxLength(60)] }),
+      validators: [Validators.required, noSoloEspacios, minimoTexto(2), Validators.maxLength(60)] }),
     fechaNacimiento: new FormControl('', { nonNullable: true,
       validators: [Validators.required, fechaNacimientoValida] }),
     genero: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     correo: new FormControl('', { nonNullable: true,
       validators: [Validators.required, Validators.email, Validators.maxLength(100)] }),
     direccion: new FormControl('', { nonNullable: true,
-      validators: [Validators.required, noSoloEspacios, Validators.minLength(5), Validators.maxLength(150)] }),
+      validators: [Validators.required, noSoloEspacios, minimoTexto(5), Validators.maxLength(150)] }),
     municipio: new FormControl('', { nonNullable: true,
-      validators: [Validators.required, noSoloEspacios, Validators.minLength(2), Validators.maxLength(60)] }),
+      validators: [Validators.required, noSoloEspacios, minimoTexto(2), Validators.maxLength(60)] }),
     carreraId: new FormControl('', { nonNullable: true, validators: [Validators.required] }),
     // FormArray permite agregar o quitar grupos de controles de teléfono.
     telefonos: new FormArray([this.crearTelefono()]),
