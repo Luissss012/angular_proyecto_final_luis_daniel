@@ -13,6 +13,11 @@ export class AlmacenamientoService {
     return this.leerDatos();
   }
 
+  reemplazarDatos(datos: DatosGuardados): void {
+    // Escribir el conjunto en una sola operación; no borrar previamente el estado actual.
+    this.guardarDatos(datos);
+  }
+
   obtenerEstudiantes(): Estudiante[] {
     return this.leerDatos().estudiantes;
   }

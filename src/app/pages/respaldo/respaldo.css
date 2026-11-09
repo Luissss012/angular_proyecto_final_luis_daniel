@@ -23,3 +23,30 @@ mat-card-content {
 .error {
   color: #a00000;
 }
+
+label {
+  display: block;
+  margin-bottom: 8px;
+}
+
+input[type="file"] {
+  width: 100%;
+}
+
+hr {
+  margin: 24px 0;
+}
+
+.confirmacion {
+  margin-top: 20px;
+  padding: 16px;
+  border: 1px solid #996000;
+  overflow-wrap: anywhere;
+}
+
+.acciones, nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 16px;
+}

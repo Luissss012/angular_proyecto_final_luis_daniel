@@ -8,7 +8,37 @@
     <p>El respaldo incluye la versión del formato y conserva los identificadores que relacionan los registros.
       Los catálogos estáticos no se incluyen. Exportar no elimina ni cambia los datos actuales.</p>
     <button mat-flat-button type="button" (click)="exportarDatos()">Exportar datos</button>
+    <hr>
+    <h2>Importar datos</h2>
+    <p>Selecciona un respaldo JSON. Primero se revisan sus campos y relaciones; elegir un archivo no cambia los registros.</p>
+    @if (erroresCatalogos.length > 0) {
+      <div class="error" role="alert">
+        @for (problema of erroresCatalogos; track $index) { <p>{{ problema }}</p> }
+        <button mat-button type="button" (click)="cargarCatalogos()">Reintentar catálogos</button>
+      </div>
+    }
+    <label for="archivo-respaldo">Archivo JSON de respaldo</label>
+    <input id="archivo-respaldo" type="file" accept=".json,application/json"
+      [disabled]="!catalogosListos || leyendo" (change)="seleccionarArchivo($event)">
+    @if (leyendo) { <p role="status">Leyendo y validando el respaldo…</p> }
+    @if (pendiente; as datos) {
+      <section class="confirmacion" aria-label="Confirmar importación">
+        <h3>Reemplazar todos los datos</h3>
+        <p>Archivo: {{ nombreArchivo }}</p>
+        <p>Contiene {{ datos.estudiantes.length }} estudiantes y {{ datos.inscripciones.length }} inscripciones.</p>
+        <p><strong>Se eliminarán los registros actuales y serán reemplazados por este respaldo.</strong>
+          Puedes exportar un respaldo de los datos actuales antes de continuar.</p>
+        <div class="acciones">
+          <button mat-flat-button type="button" [disabled]="!catalogosListos" (click)="confirmarImportacion()">Confirmar reemplazo</button>
+          <button mat-button type="button" (click)="cancelarImportacion()">Cancelar</button>
+        </div>
+      </section>
+    }
     @if (mensaje) { <p class="resultado" role="status">{{ mensaje }}</p> }
     @if (error) { <p class="error" role="alert">{{ error }}</p> }
+    <nav aria-label="Consultar los registros">
+      <a mat-button routerLink="/estudiantes">Ver estudiantes</a>
+      <a mat-button routerLink="/inscripciones">Ver inscripciones</a>
+    </nav>
   </mat-card-content>
 </mat-card>
