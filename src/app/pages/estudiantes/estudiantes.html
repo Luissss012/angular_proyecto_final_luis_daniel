@@ -1,8 +1,11 @@
-<mat-card appearance="outlined">
+<mat-card appearance="outlined" id="formulario-estudiante">
   <mat-card-header>
     <mat-card-title><h1>Estudiantes</h1></mat-card-title>
   </mat-card-header>
   <mat-card-content>
+    @if (estudianteEnEdicionId) {
+      <p role="status"><strong>Editando estudiante.</strong> Los cambios conservan su identificador.</p>
+    }
     <p>Datos personales del estudiante. Completa los campos y los teléfonos que agregues.</p>
 
     @if (errorCarreras || errorGeneros || errorTiposContacto) {
@@ -106,8 +109,8 @@
       <div class="acciones">
         <button mat-flat-button type="submit"
           [disabled]="formulario.invalid || carreras.length === 0 || generos.length === 0 ||
-            (telefonos.length > 0 && tiposContacto.length === 0)">Guardar estudiante</button>
-        <button mat-button type="button" (click)="limpiarFormulario()">Limpiar</button>
+            (telefonos.length > 0 && tiposContacto.length === 0)">{{ estudianteEnEdicionId ? 'Guardar cambios' : 'Guardar estudiante' }}</button>
+        <button mat-button type="button" (click)="limpiarFormulario()">{{ estudianteEnEdicionId ? 'Cancelar edición' : 'Limpiar' }}</button>
       </div>
     </form>
     @if (mensaje) {
@@ -164,6 +167,16 @@
               <th mat-header-cell *matHeaderCellDef>Correo</th>
               <td mat-cell *matCellDef="let estudiante">{{ estudiante.correo }}</td>
             </ng-container>
+            <ng-container matColumnDef="acciones">
+              <th mat-header-cell *matHeaderCellDef>Acciones</th>
+              <td mat-cell *matCellDef="let estudiante">
+                <div class="acciones-fila">
+                  <button mat-button type="button" (click)="verDetalle(estudiante)">Ver detalle</button>
+                  <a mat-button href="#formulario-estudiante" (click)="editarEstudiante(estudiante)">Editar</a>
+                  <button mat-button type="button" (click)="solicitarEliminacion(estudiante)">Eliminar</button>
+                </div>
+              </td>
+            </ng-container>
             <tr mat-header-row *matHeaderRowDef="columnas"></tr>
             <tr mat-row *matRowDef="let fila; columns: columnas;"></tr>
           </table>
@@ -172,3 +185,54 @@
     }
   </mat-card-content>
 </mat-card>
+
+@if (errorOperacion) {
+  <p class="error-carga" role="alert">{{ errorOperacion }}</p>
+}
+@if (mensajeOperacion) {
+  <p class="resultado" role="status">{{ mensajeOperacion }}</p>
+}
+
+@if (pendienteEliminar; as estudiante) {
+  <mat-card appearance="outlined" class="listado" role="region" aria-label="Confirmar eliminación">
+    <mat-card-content>
+      <h2>Confirmar eliminación</h2>
+      <p>¿Eliminar a <strong>{{ estudiante.nombres }} {{ estudiante.apellidos }}</strong>
+        ({{ estudiante.codigo }})? Esta acción no se puede deshacer.</p>
+      <div class="acciones">
+        <button mat-flat-button type="button" (click)="confirmarEliminacion()">Sí, eliminar</button>
+        <button mat-button type="button" (click)="cancelarEliminacion()">Cancelar</button>
+      </div>
+    </mat-card-content>
+  </mat-card>
+}
+
+@if (detalle; as estudiante) {
+  <mat-card appearance="outlined" class="listado">
+    <mat-card-header>
+      <mat-card-title><h2>Detalle del estudiante</h2></mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <dl>
+        <dt>Código</dt><dd>{{ estudiante.codigo }}</dd>
+        <dt>Nombres</dt><dd>{{ estudiante.nombres }}</dd>
+        <dt>Apellidos</dt><dd>{{ estudiante.apellidos }}</dd>
+        <dt>Fecha de nacimiento</dt><dd>{{ estudiante.fechaNacimiento }}</dd>
+        <dt>Género</dt><dd>{{ estudiante.genero }}</dd>
+        <dt>Correo</dt><dd>{{ estudiante.correo }}</dd>
+        <dt>Dirección</dt><dd>{{ estudiante.direccion }}</dd>
+        <dt>Municipio</dt><dd>{{ estudiante.municipio }}</dd>
+        <dt>Carrera</dt><dd>{{ nombreCarrera(estudiante.carreraId) }}</dd>
+      </dl>
+      <h3>Teléfonos</h3>
+      <ul>
+        @for (telefono of estudiante.telefonos; track $index) {
+          <li>{{ telefono.numero }} · {{ telefono.tipo }} · {{ telefono.activo ? 'Activo' : 'Inactivo' }}</li>
+        } @empty {
+          <li>No tiene teléfonos registrados.</li>
+        }
+      </ul>
+      <button mat-button type="button" (click)="detalle = null">Cerrar detalle</button>
+    </mat-card-content>
+  </mat-card>
+}

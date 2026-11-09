@@ -13,10 +13,10 @@ export class AlmacenamientoService {
   }
 
   // La comparación usa el mismo criterio de unicidad que el guardado.
-  existeCodigoEstudiantil(codigo: string): boolean {
+  existeCodigoEstudiantil(codigo: string, excluirId: string | null = null): boolean {
     const codigoBuscado = codigo.trim().toUpperCase();
     return this.obtenerEstudiantes().some(estudiante =>
-      estudiante.codigo.trim().toUpperCase() === codigoBuscado);
+      estudiante.id !== excluirId && estudiante.codigo.trim().toUpperCase() === codigoBuscado);
   }
 
   obtenerInscripciones(): Inscripcion[] {
@@ -28,6 +28,38 @@ export class AlmacenamientoService {
     const datos = this.leerDatos();
     datos.estudiantes.push(estudiante);
     // validarDatos comprueba códigos e identificadores únicos antes de escribir.
+    this.guardarDatos(datos);
+  }
+
+  obtenerEstudiante(id: string): Estudiante {
+    const estudiante = this.obtenerEstudiantes().find(registro => registro.id === id);
+    if (!estudiante) throw new Error('El estudiante ya no existe. Actualiza el listado.');
+    return estudiante;
+  }
+
+  actualizarEstudiante(estudiante: Estudiante): void {
+    const datos = this.leerDatos();
+    const indice = datos.estudiantes.findIndex(registro => registro.id === estudiante.id);
+    if (indice === -1) throw new Error('El estudiante ya no existe. Actualiza el listado.');
+    // Cambiar carrera con inscripciones podría dejar cursos de otra carrera asociados.
+    if (datos.estudiantes[indice].carreraId !== estudiante.carreraId &&
+        datos.inscripciones.some(inscripcion => inscripcion.estudianteId === estudiante.id)) {
+      throw new Error('No se puede cambiar la carrera de un estudiante con inscripciones.');
+    }
+    datos.estudiantes[indice] = estudiante;
+    this.guardarDatos(datos);
+  }
+
+  eliminarEstudiante(id: string): void {
+    const datos = this.leerDatos();
+    if (!datos.estudiantes.some(estudiante => estudiante.id === id)) {
+      throw new Error('El estudiante ya no existe. Actualiza el listado.');
+    }
+    // La protección se aplica en el servicio, aunque la pantalla pida confirmación.
+    if (datos.inscripciones.some(inscripcion => inscripcion.estudianteId === id)) {
+      throw new Error('No se puede eliminar este estudiante porque tiene inscripciones.');
+    }
+    datos.estudiantes = datos.estudiantes.filter(estudiante => estudiante.id !== id);
     this.guardarDatos(datos);
   }
 

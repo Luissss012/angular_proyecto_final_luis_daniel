@@ -102,3 +102,18 @@ caption {
 th, td {
   padding: 12px;
 }
+
+.acciones-fila {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+}
+
+dt {
+  font-weight: bold;
+}
+
+dd {
+  margin: 0 0 12px;
+  overflow-wrap: anywhere;
+}

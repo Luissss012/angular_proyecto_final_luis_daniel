@@ -24,7 +24,12 @@ import { fechaNacimientoValida, noSoloEspacios, numeroTelefonoValido } from '../
 export class Estudiantes implements OnInit {
   estudiantes: Estudiante[] = [];
   busqueda = new FormControl('', { nonNullable: true });
-  columnas = ['codigo', 'nombres', 'apellidos', 'carrera', 'correo'];
+  columnas = ['codigo', 'nombres', 'apellidos', 'carrera', 'correo', 'acciones'];
+  estudianteEnEdicionId: string | null = null;
+  detalle: Estudiante | null = null;
+  pendienteEliminar: Estudiante | null = null;
+  errorOperacion = '';
+  mensajeOperacion = '';
   errorListado = '';
   carreras: OpcionCatalogo[] = [];
   generos: OpcionCatalogo[] = [];
@@ -69,7 +74,7 @@ export class Estudiantes implements OnInit {
       }
       try {
         this.errorAlmacenamiento = '';
-        return this.almacenamiento.existeCodigoEstudiantil(control.value) ? { codigoRepetido: true } : null;
+        return this.almacenamiento.existeCodigoEstudiantil(control.value, this.estudianteEnEdicionId) ? { codigoRepetido: true } : null;
       } catch (error) {
         this.errorAlmacenamiento = error instanceof Error ? error.message : 'No se pudo consultar el código.';
         return { almacenamiento: true };
@@ -143,6 +148,70 @@ export class Estudiantes implements OnInit {
     return carrera ? carrera.nombre : carreraId;
   }
 
+  verDetalle(estudiante: Estudiante): void {
+    this.errorOperacion = '';
+    this.mensajeOperacion = '';
+    this.pendienteEliminar = null;
+    try {
+      // Consultar el servicio evita mostrar una copia antigua del listado.
+      this.detalle = this.almacenamiento.obtenerEstudiante(estudiante.id);
+    } catch (error) {
+      this.errorOperacion = error instanceof Error ? error.message : 'No se pudo consultar el estudiante.';
+    }
+  }
+
+  editarEstudiante(estudiante: Estudiante): void {
+    this.errorOperacion = '';
+    this.mensajeOperacion = '';
+    try {
+      const actual = this.almacenamiento.obtenerEstudiante(estudiante.id);
+      this.limpiarFormulario();
+      // Fijar el id antes de validar el código para no detectarse como duplicado.
+      this.estudianteEnEdicionId = actual.id;
+      this.telefonos.clear();
+      for (const telefono of actual.telefonos) {
+        const grupo = this.crearTelefono();
+        grupo.setValue(telefono);
+        this.telefonos.push(grupo);
+      }
+      this.formulario.patchValue(actual);
+      this.formulario.markAsPristine();
+      this.formulario.markAsUntouched();
+      this.detalle = null;
+      this.pendienteEliminar = null;
+    } catch (error) {
+      this.errorOperacion = error instanceof Error ? error.message : 'No se pudo cargar la edición.';
+    }
+  }
+
+  solicitarEliminacion(estudiante: Estudiante): void {
+    this.errorOperacion = '';
+    this.mensajeOperacion = '';
+    this.detalle = null;
+    this.pendienteEliminar = estudiante;
+  }
+
+  cancelarEliminacion(): void {
+    this.pendienteEliminar = null;
+    this.errorOperacion = '';
+  }
+
+  confirmarEliminacion(): void {
+    if (!this.pendienteEliminar) return;
+    const id = this.pendienteEliminar.id;
+    try {
+      this.almacenamiento.eliminarEstudiante(id);
+      if (this.estudianteEnEdicionId === id) this.limpiarFormulario();
+      this.pendienteEliminar = null;
+      this.detalle = null;
+      this.errorOperacion = '';
+      this.cargarEstudiantes();
+      this.mensajeOperacion = 'Estudiante eliminado correctamente.';
+    } catch (error) {
+      this.errorOperacion = error instanceof Error ? error.message : 'No se pudo eliminar el estudiante.';
+    }
+  }
+
   guardarEstudiante(): void {
     this.mensaje = '';
     // Reconsulta el código por si el almacenamiento cambió desde la última revisión.
@@ -163,7 +232,7 @@ export class Estudiantes implements OnInit {
     try {
       const estudiante: Estudiante = {
         // El id interno permanece independiente del código estudiantil visible.
-        id: crypto.randomUUID(),
+        id: this.estudianteEnEdicionId ?? crypto.randomUUID(),
         codigo: valores.codigo.trim().toUpperCase(),
         nombres: valores.nombres.trim(),
         apellidos: valores.apellidos.trim(),
@@ -177,17 +246,25 @@ export class Estudiantes implements OnInit {
           numero: telefono.numero.trim(), tipo: telefono.tipo, activo: telefono.activo,
         })),
       };
-      this.almacenamiento.agregarEstudiante(estudiante);
+      const editando = this.estudianteEnEdicionId !== null;
+      if (editando) {
+        this.almacenamiento.actualizarEstudiante(estudiante);
+      } else {
+        this.almacenamiento.agregarEstudiante(estudiante);
+      }
+      this.detalle = null;
+      this.pendienteEliminar = null;
       // Solo limpiar y mostrar éxito después de que el servicio termine de guardar.
       this.limpiarFormulario();
       this.cargarEstudiantes();
-      this.mensaje = 'Estudiante registrado correctamente.';
+      this.mensaje = editando ? 'Estudiante actualizado correctamente.' : 'Estudiante registrado correctamente.';
     } catch (error) {
       this.errorAlmacenamiento = error instanceof Error ? error.message : 'No se pudo guardar el estudiante.';
     }
   }
 
   limpiarFormulario(): void {
+    this.estudianteEnEdicionId = null;
     // reset no elimina filas del FormArray; reconstruimos una sola fila inicial.
     this.telefonos.clear();
     this.telefonos.push(this.crearTelefono());
